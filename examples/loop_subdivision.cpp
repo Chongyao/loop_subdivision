@@ -3,6 +3,10 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+#include "edge_core.h"
+using namespace std;
+using namespace Eigen;
+using namespace marvel;
 
 int main(int argc, char**argv){
   Eigen::initParallel();
@@ -38,8 +42,12 @@ int main(int argc, char**argv){
   nods.transposeInPlace();
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>load obj<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-  
-  
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>construct edge_core
+  edge_core EC(surf, nods);
+  auto e = EC.edges_[5];
+  cout << e.f1 <<" "<< e.f2 <<" "<< e. v1 <<" "<< e.v2<<" " << e.v3<<" " << e.v4<<" " << endl;;
+  cout << surf.col(e.f1)<<endl;
+  cout << surf.col(e.f2)<<endl;
 
   
 }
