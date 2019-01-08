@@ -1,4 +1,5 @@
 #include <libigl/readOBJ.h>
+#include <libigl/writeOBJ.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -35,4 +36,10 @@ int main(int argc, char**argv){
   
   surf.transposeInPlace();
   nods.transposeInPlace();
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>load obj<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+  
+  
+
+  
 }
