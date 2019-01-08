@@ -56,6 +56,11 @@ edge_core::edge_core(const MatrixXi& tris, const MatrixXf& nods){
   }
   num_edges_ = edge_id - 1;
 
+  for(auto& e : edges_){
+    cout << e.f1 << " " << e.f2 << " " << e.v1 << " " <<e.v2 << " " << e.v3 << " " << e.v4 << endl;
+  }
+
+
   
 }
 
@@ -63,8 +68,7 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
 
   //construct new lookup table
   new_tris.resize(3, 4 * num_faces_);
-  new_nods.resize(3, num_vertices_ + num_edges_);
-
+  new_nods.resize(3, num_vertices_+ num_edges_);
   
   
   //calculate odd points
@@ -82,11 +86,12 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
   for(size_t i = 0; i < num_vertices_; ++i){
     size_t valence = vertices_[i].size();
     float beta = 1.0 / valence * (0.625 - pow((0.375 + 0.25 * cos(2 * PI / valence)), 2) );
-    
+    cout << beta << endl;
+    new_nods.col(i) = (1 - valence * beta) * nods.col(i);
     for(size_t j = 0; j < valence; ++j){
       new_nods.col(i) += beta * nods.col( vertices_[i][j]  );
     }
-    new_nods.col(i) += (1 - valence) * beta * nods.col(i);
+
     
   }
 
@@ -95,7 +100,7 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
   for(size_t i = 0; i < num_edges_; ++i){
     //get order
     size_t order1, order2;{
-      for(size_t j = 0; j < 3; ++i){
+      for(size_t j = 0; j < 3; ++j){
         auto edge_tmp = edges_[i];
         if( edges_[i].f1 >= tris.cols())
           cout << edges_[i].f1;
@@ -104,31 +109,35 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
           break;
         }
       }
-      for(size_t j = 0; j < 3; ++i){
-        if(edges_[i].v1 == tris(j, edges_[i].f2)){
+      for(size_t j = 0; j < 3; ++j){
+        if(edges_[i].v2 == tris(j, edges_[i].f2)){
           order2 = j;
           break;
         }
       }      
     }
-    
-    size_t f1_1st = edges_[i].f1 * 4;
-    new_tris(1, f1_1st + order1 % 3);
-    new_tris(2, f1_1st + (order1 + 1) %3);
-    new_tris(order1, f1_1st + (order1 + 2) %3);
 
-    
+    size_t vert_id = i + num_vertices_;
+    size_t f1_1st = edges_[i].f1 * 4 ;
+    assert(vert_id < num_vertices_ + num_edges_);
+    new_tris(1, f1_1st + order1 % 3) = vert_id;
+    new_tris(2, f1_1st + (order1 + 1) %3) = vert_id;
+    new_tris(order1, f1_1st + 3) = vert_id;
+
+
     size_t f2_1st = edges_[i].f2 * 4;
-    new_tris(2, f2_1st + order2 % 3);
-    new_tris(1, f2_1st + (order2 + 1) %3);
-    new_tris(order2, f2_1st + (order2 + 2) %3);
+    new_tris(1, f2_1st + order2 % 3) = vert_id;
+    new_tris(2, f2_1st + (order2 + 1) %3) = vert_id;
+    new_tris(order2, f2_1st + 3) = vert_id;
   }
   //set new tris odd points:
+  cout << new_tris << endl;
   #pragma parallel omp for
-  for(size_t i = 0; i < num_vertices_; ++i){
+  for(size_t i = 0; i < num_faces_; ++i){
+
     new_tris.block(0, i*4, 1, 3) = tris.col(i).transpose();
   }
-
+  return 0;
   
 }
 
