@@ -1,6 +1,7 @@
 #include "edge_core.h"
 #include <map>
 #include <cmath>
+#include <iostream>
 using namespace std;
 using namespace Eigen;
 const float PI = 3.14159265359;
@@ -53,7 +54,7 @@ edge_core::edge_core(const MatrixXi& tris, const MatrixXf& nods){
     }
 
   }
-  num_edges_ = edge_id;
+  num_edges_ = edge_id - 1;
 
   
 }
@@ -95,6 +96,9 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
     //get order
     size_t order1, order2;{
       for(size_t j = 0; j < 3; ++i){
+        auto edge_tmp = edges_[i];
+        if( edges_[i].f1 >= tris.cols())
+          cout << edges_[i].f1;
         if(edges_[i].v1 == tris(j, edges_[i].f1)){
           order1 = j;
           break;
