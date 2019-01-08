@@ -32,6 +32,7 @@ int main(int argc, char**argv){
   cout << "[INFO]>>>>>>>>>>>>>>>>>>>IMPORT MESH<<<<<<<<<<<<<<<<<<" << endl;
   const string mesh_name = pt.get<string>("surf");
   const string indir = pt.get<string>("indir");
+  const string outdir = pt.get<string>("outdir");
   MatrixXi surf;
   MatrixXf nods;
   
@@ -44,10 +45,14 @@ int main(int argc, char**argv){
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>construct edge_core
   edge_core EC(surf, nods);
-  auto e = EC.edges_[5];
-  cout << e.f1 <<" "<< e.f2 <<" "<< e. v1 <<" "<< e.v2<<" " << e.v3<<" " << e.v4<<" " << endl;;
-  cout << surf.col(e.f1)<<endl;
-  cout << surf.col(e.f2)<<endl;
+  MatrixXf new_nods;
+  MatrixXi new_surf;
+  EC.loop(surf, nods, new_surf, new_nods);
+  
+  new_surf.transposeInPlace();
+  new_nods.transposeInPlace();
+  igl::writeOBJ((outdir+mesh_name+".obj").c_str(), new_nods, new_surf);
+
 
   
 }

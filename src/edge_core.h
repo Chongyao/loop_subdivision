@@ -3,7 +3,7 @@
 #include <unordered_set>
 #include <set>
 #include <vector>
-#include <memory>
+
 #include <Eigen/Core>
 namespace marvel{
 
@@ -18,9 +18,11 @@ struct one_edge{
 class edge_core{
  public:
   edge_core(const Eigen::MatrixXi& tris, const Eigen::MatrixXf& nods);
-  
- // private:
+  int loop(const Eigen::MatrixXi& tris, const Eigen::MatrixXf& nods, Eigen::MatrixXi& new_tris, Eigen::MatrixXf& new_nods);
+ private:
+  size_t num_faces_;
   size_t num_edges_;
+  size_t num_vertices_;
   std::vector<one_edge> edges_;
   std::vector<std::vector<size_t> > vertices_;
 
