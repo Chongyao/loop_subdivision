@@ -52,7 +52,8 @@ int main(int argc, char**argv){
   new_surf.transposeInPlace();
   new_nods.transposeInPlace();
   igl::writeOBJ((outdir+mesh_name+".obj").c_str(), new_nods, new_surf);
-
+  
+  return 0;
 
   
 }

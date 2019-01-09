@@ -1,7 +1,6 @@
 #include "edge_core.h"
 #include <map>
 #include <cmath>
-#include <iostream>
 using namespace std;
 using namespace Eigen;
 const float PI = 3.14159265359;
@@ -54,11 +53,7 @@ edge_core::edge_core(const MatrixXi& tris, const MatrixXf& nods){
     }
 
   }
-  num_edges_ = edge_id - 1;
-
-  for(auto& e : edges_){
-    cout << e.f1 << " " << e.f2 << " " << e.v1 << " " <<e.v2 << " " << e.v3 << " " << e.v4 << endl;
-  }
+  num_edges_ = edges_.size();
 
 
   
@@ -74,9 +69,11 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
   //calculate odd points
   #pragma parallel omp for 
   for(size_t i = 0; i < num_edges_; ++i){
-    if(edges_[i].f2 != -1)
+    if(edges_[i].f2 != -1){
       new_nods.col(num_vertices_ + i) = 0.375 * ( nods.col(edges_[i].v1) + nods.col(edges_[i].v2) )
           + 0.125 * ( nods.col(edges_[i].v3) + nods.col(edges_[i].v4) );
+    }
+
     else
       new_nods.col(num_vertices_ + i) = 0.5 * ( nods.col(edges_[i].v1) + nods.col(edges_[i].v2) );
   }
@@ -86,13 +83,12 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
   for(size_t i = 0; i < num_vertices_; ++i){
     size_t valence = vertices_[i].size();
     float beta = 1.0 / valence * (0.625 - pow((0.375 + 0.25 * cos(2 * PI / valence)), 2) );
-    cout << beta << endl;
+
     new_nods.col(i) = (1 - valence * beta) * nods.col(i);
     for(size_t j = 0; j < valence; ++j){
       new_nods.col(i) += beta * nods.col( vertices_[i][j]  );
     }
 
-    
   }
 
   //set new tris odd points:
@@ -101,9 +97,7 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
     //get order
     size_t order1, order2;{
       for(size_t j = 0; j < 3; ++j){
-        auto edge_tmp = edges_[i];
-        if( edges_[i].f1 >= tris.cols())
-          cout << edges_[i].f1;
+
         if(edges_[i].v1 == tris(j, edges_[i].f1)){
           order1 = j;
           break;
@@ -118,6 +112,7 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
     }
 
     size_t vert_id = i + num_vertices_;
+    assert(vert_id >= num_vertices_);
     size_t f1_1st = edges_[i].f1 * 4 ;
     assert(vert_id < num_vertices_ + num_edges_);
     new_tris(1, f1_1st + order1 % 3) = vert_id;
@@ -131,7 +126,7 @@ int edge_core::loop(const MatrixXi& tris, const MatrixXf& nods, MatrixXi& new_tr
     new_tris(order2, f2_1st + 3) = vert_id;
   }
   //set new tris odd points:
-  cout << new_tris << endl;
+
   #pragma parallel omp for
   for(size_t i = 0; i < num_faces_; ++i){
 
