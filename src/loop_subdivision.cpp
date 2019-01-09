@@ -33,6 +33,7 @@ int main(int argc, char**argv){
   const string mesh_name = pt.get<string>("surf");
   const string indir = pt.get<string>("indir");
   const string outdir = pt.get<string>("outdir");
+  const size_t times = pt.get<size_t>("times");
   MatrixXi surf;
   MatrixXf nods;
   
@@ -44,14 +45,29 @@ int main(int argc, char**argv){
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>load obj<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>construct edge_core
-  edge_core EC(surf, nods);
-  MatrixXf new_nods;
-  MatrixXi new_surf;
-  EC.loop(surf, nods, new_surf, new_nods);
-  
-  new_surf.transposeInPlace();
-  new_nods.transposeInPlace();
-  igl::writeOBJ((outdir+mesh_name+".obj").c_str(), new_nods, new_surf);
+  edge_core EC;
+  shared_ptr<MatrixXi> ori_tris = make_shared<MatrixXi>(surf);
+  shared_ptr<MatrixXf> ori_verts = make_shared<MatrixXf>(nods);
+  shared_ptr<MatrixXi> new_tris = make_shared<MatrixXi>(0,0);
+  shared_ptr<MatrixXf> new_verts = make_shared<MatrixXf>(0,0);
+
+
+  for(size_t i = 0; i < times; ++i){
+    EC(ori_tris, ori_verts, new_tris, new_verts);
+    
+
+    igl::writeOBJ((outdir+mesh_name+ to_string(i) + ".obj").c_str(), new_verts->transpose(), new_tris->transpose());
+    
+
+    
+    ori_tris = new_tris;
+    ori_verts = new_verts;
+    new_tris = make_shared<MatrixXi>(0,0);
+    new_verts = make_shared<MatrixXf>(0,0);
+  }
+
+      
+
   
   return 0;
 
