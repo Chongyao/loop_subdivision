@@ -1,6 +1,7 @@
 #include "edge_core.h"
 #include <map>
 #include <cmath>
+#include <iostream>
 using namespace std;
 using namespace Eigen;
 const float PI = 3.14159265359;
@@ -53,53 +54,45 @@ int edge_core::construct_core(const MatrixXi& tris, const MatrixXf& nods){
 
   }
   num_edges_ = edges_.size();
-
+  if_construct_ = true;
   return 0;
   
 }
 
 
 
-
-
-
-int edge_core::operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_tris, MF_ptr new_verts){
-  
-
-  construct_core(*ori_tris, *ori_verts);
-
-  
-  //construct new lookup table
-  new_tris->resize(3, 4 * num_faces_);
-  new_verts->resize(3, num_vertices_+ num_edges_);
-  
-  
-  //calculate odd points
-  #pragma omp parallel for 
+int edge_core::calculate_odd_points(C_MF_ptr& ori_verts, MF_ptr& new_verts){
+#pragma omp parallel for 
   for(size_t i = 0; i < num_edges_; ++i){
     if(edges_[i].f2 != -1){
       new_verts->col(num_vertices_ + i) = 0.375 * ( ori_verts->col(edges_[i].v1) + ori_verts->col(edges_[i].v2) )
           + 0.125 * ( ori_verts->col(edges_[i].v3) + ori_verts->col(edges_[i].v4) );
+
     }
 
     else
       new_verts->col(num_vertices_ + i) = 0.5 * ( ori_verts->col(edges_[i].v1) + ori_verts->col(edges_[i].v2) );
   }
 
-  //calculate even points
+  
+  return 0;
+}
+
+int edge_core::calculate_even_points(C_MF_ptr& ori_verts, MF_ptr& new_verts){
   #pragma omp parallel for
   for(size_t i = 0; i < num_vertices_; ++i){
     size_t valence = vertices_[i].size();
     float beta = 1.0 / valence * (0.625 - pow((0.375 + 0.25 * cos(2 * PI / valence)), 2) );
-
     new_verts->col(i) = (1 - valence * beta) * ori_verts->col(i);
     for(size_t j = 0; j < valence; ++j){
       new_verts->col(i) += beta * ori_verts->col( vertices_[i][j]  );
     }
 
   }
+  return 0;
+}
 
-  //set new tris odd points:
+int edge_core::set_odds_to_new_tris(C_MI_ptr& ori_tris, MI_ptr& new_tris){
   #pragma omp parallel for
   for(size_t i = 0; i < num_edges_; ++i){
     //get order
@@ -133,13 +126,34 @@ int edge_core::operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_
     (*new_tris)(2, f2_1st + (order2 + 1) %3) = vert_id;
     (*new_tris)(order2, f2_1st + 3) = vert_id;
   }
-  //set new tris odd points:
-
+  return 0;  
+}
+int edge_core::set_evens_to_new_tris(C_MI_ptr& ori_tris, MI_ptr& new_tris){
   #pragma omp parallel for
   for(size_t i = 0; i < num_faces_; ++i){
-
     new_tris->block(0, i*4, 1, 3) = ori_tris->col(i).transpose();
-  }
+   } 
+  return 0;
+}
+
+int edge_core::operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_tris, MF_ptr& new_verts){
+  
+  
+  if(!if_construct_)
+    construct_core(*ori_tris, *ori_verts);    
+
+  
+  //construct new lookup table
+  new_tris->resize(3, 4 * num_faces_);
+  new_verts->resize(3, num_vertices_+ num_edges_);
+  
+  
+  calculate_odd_points(ori_verts, new_verts);
+  calculate_even_points(ori_verts, new_verts);
+  
+  set_odds_to_new_tris(ori_tris, new_tris);
+  set_evens_to_new_tris(ori_tris, new_tris);  
+
   return 0;
   
 }

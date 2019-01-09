@@ -23,16 +23,26 @@ struct one_edge{
 //TODO use hash map
 class edge_core{
  public:
-  edge_core(){}
-  int operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_tris, MF_ptr new_verts);
+  edge_core(bool if_update):if_update_(if_update){}
+  int operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_tris, MF_ptr& new_verts);
+
+  
  private:
   int construct_core(const Eigen::MatrixXi& tris, const Eigen::MatrixXf& nods);
-  // int loop(const Eigen::MatrixXi& tris, const Eigen::MatrixXf& nods, Eigen::MatrixXi& new_tris, Eigen::MatrixXf& new_nods)const ;
+
+  int calculate_odd_points(C_MF_ptr& ori_verts, MF_ptr& new_verts);
+  int calculate_even_points(C_MF_ptr& ori_verts, MF_ptr& new_verts);
+  int set_odds_to_new_tris(C_MI_ptr& ori_tris, MI_ptr& new_tris);
+  int set_evens_to_new_tris(C_MI_ptr& ori_tris, MI_ptr& new_tris);
+  
   size_t num_faces_;
   size_t num_edges_;
   size_t num_vertices_;
   std::vector<one_edge> edges_;
   std::vector<std::vector<size_t> > vertices_;
+
+  bool if_update_;
+  bool if_construct_;
 
   
 };

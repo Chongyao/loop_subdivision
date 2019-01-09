@@ -44,8 +44,10 @@ int main(int argc, char**argv){
   nods.transposeInPlace();
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>load obj<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
+  
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>construct edge_core
-  edge_core EC;
+  bool if_update = times > 1? true : false;
+  edge_core EC(if_update);
   shared_ptr<MatrixXi> ori_tris = make_shared<MatrixXi>(surf);
   shared_ptr<MatrixXf> ori_verts = make_shared<MatrixXf>(nods);
   shared_ptr<MatrixXi> new_tris = make_shared<MatrixXi>(0,0);
@@ -66,8 +68,10 @@ int main(int argc, char**argv){
     new_verts = make_shared<MatrixXf>(0,0);
   }
 
-      
 
+
+
+  
   
   return 0;
 
