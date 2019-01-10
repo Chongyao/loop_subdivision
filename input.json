@@ -1,7 +1,7 @@
 {
   "indir":"../../models/",
   "outdir":"../../output/",
-  "surf":"cube",
-  "times":8
+  "surf":"bunny",
+  "times":5
   
 }

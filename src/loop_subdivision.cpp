@@ -68,7 +68,7 @@ int main(int argc, char**argv){
   }
   auto end = system_clock::now();
   auto duration = duration_cast<microseconds>(end - start);
-  cout <<  "loop subdivision花费了" 
+  cout <<  "updated alg paralellel花费了" 
        << double(duration.count()) * microseconds::period::num / microseconds::period::den 
        << "秒" << endl;
 
