@@ -13,7 +13,9 @@ int edge_core::construct_core(const MatrixXi& tris, const MatrixXf& nods){
   //init
   num_faces_ = tris.cols();
   num_vertices_ = nods.cols();
-  edges_.resize(0);
+  edges_.clear();
+  vertices_.clear();
+  edges_ .resize(0);
   vertices_.resize(num_vertices_, vector<size_t>(0));
   
   
@@ -67,9 +69,7 @@ int edge_core::calculate_odd_points(C_MF_ptr& ori_verts, MF_ptr& new_verts){
     if(edges_[i].f2 != -1){
       new_verts->col(num_vertices_ + i) = 0.375 * ( ori_verts->col(edges_[i].v1) + ori_verts->col(edges_[i].v2) )
           + 0.125 * ( ori_verts->col(edges_[i].v3) + ori_verts->col(edges_[i].v4) );
-
     }
-
     else
       new_verts->col(num_vertices_ + i) = 0.5 * ( ori_verts->col(edges_[i].v1) + ori_verts->col(edges_[i].v2) );
   }
@@ -139,8 +139,8 @@ int edge_core::set_evens_to_new_tris(C_MI_ptr& ori_tris, MI_ptr& new_tris){
 int edge_core::operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_tris, MF_ptr& new_verts){
   
   
-  if(!if_construct_)
-    construct_core(*ori_tris, *ori_verts);    
+  // if(!if_construct_)
+  construct_core(*ori_tris, *ori_verts);    
 
   
   //construct new lookup table
@@ -152,12 +152,35 @@ int edge_core::operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_
   calculate_even_points(ori_verts, new_verts);
   
   set_odds_to_new_tris(ori_tris, new_tris);
-  set_evens_to_new_tris(ori_tris, new_tris);  
+  set_evens_to_new_tris(ori_tris, new_tris);
 
+  
   return 0;
   
 }
 
+// >>>>>>>>>>>>>>>>TODO : update edges after each loop<<<<<<<<<<<<<<<<<<<<<<<<<
+// int edge_core::update_edges(){
+//   edges_.resize(2 * num_edges_ + 3 * num_faces_);
+// #pragma omp parallel for 
+//   for(size_t i = 0; i < num_edges_; ++i){
+//     if(edges_[i].f2 != -1){
+//       edges_[i].f1 = 
+//     }
+//     else
+//       new_verts->col(num_vertices_ + i) = 0.5 * ( ori_verts->col(edges_[i].v1) + ori_verts->col(edges_[i].v2) );
+//   }
+
+  
+//   return 0;
+//   for(size_t i = 0; i < num_edges_; ++i){
+
+
+    
+    
+//   }
+
+// }
 
 
 

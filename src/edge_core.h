@@ -34,6 +34,8 @@ class edge_core{
   int calculate_even_points(C_MF_ptr& ori_verts, MF_ptr& new_verts);
   int set_odds_to_new_tris(C_MI_ptr& ori_tris, MI_ptr& new_tris);
   int set_evens_to_new_tris(C_MI_ptr& ori_tris, MI_ptr& new_tris);
+
+  // int update_edges();
   
   size_t num_faces_;
   size_t num_edges_;

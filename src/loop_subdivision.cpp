@@ -15,7 +15,7 @@ int main(int argc, char**argv){
   
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>load obj<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
   boost::property_tree::ptree pt;{
-    const string jsonfile_path = argv[1];
+    const string jsonfile_path = "../../input.json";
     
     cout << jsonfile_path << endl;
     const size_t ext = jsonfile_path.rfind(".json");
@@ -53,10 +53,8 @@ int main(int argc, char**argv){
   shared_ptr<MatrixXi> new_tris = make_shared<MatrixXi>(0,0);
   shared_ptr<MatrixXf> new_verts = make_shared<MatrixXf>(0,0);
 
-
   for(size_t i = 0; i < times; ++i){
     EC(ori_tris, ori_verts, new_tris, new_verts);
-    
 
     igl::writeOBJ((outdir+mesh_name+ to_string(i) + ".obj").c_str(), new_verts->transpose(), new_tris->transpose());
     
