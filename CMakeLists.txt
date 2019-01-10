@@ -2,7 +2,7 @@ project(Hierarchical-Z-Buffer)
 cmake_minimum_required(VERSION 2.8)
 
 list(APPEND CMAKE_CXX_FLAGS "-fopenmp -std=c++11 -o3 -fpermissive" )
-
+# list(APPEND CMAKE_CXX_FLAGS " -std=c++11 -o3 -fpermissive" )
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/;${CMAKE_MODULE_PATH}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -36,6 +36,4 @@ if (OPENMP_FOUND)
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
-# list(APPEND CMAKE_C_FLASG "${OpenMP_C_FLAGS}")
-# list(APPEND CMAKE_CXX_FLAGS "${OpenMP_CXX_FLASG}")
 add_subdirectory(src)
