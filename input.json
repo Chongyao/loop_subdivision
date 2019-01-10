@@ -2,6 +2,6 @@
   "indir":"../../models/",
   "outdir":"../../output/",
   "surf":"cube",
-  "times":7
+  "times":10
   
 }

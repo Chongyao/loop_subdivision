@@ -2,12 +2,12 @@
 #include <libigl/writeOBJ.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
+#include <chrono>
 #include "edge_core.h"
 using namespace std;
 using namespace Eigen;
 using namespace marvel;
-
+using namespace chrono;
 int main(int argc, char**argv){
   Eigen::initParallel();
   cout << "[INFO]>>>>>>>>>>>>>>>>>>>Eigen parallel<<<<<<<<<<<<<<<<<<" << endl;
@@ -52,6 +52,7 @@ int main(int argc, char**argv){
   shared_ptr<MatrixXf> ori_verts = make_shared<MatrixXf>(nods);
   shared_ptr<MatrixXi> new_tris = make_shared<MatrixXi>(0,0);
   shared_ptr<MatrixXf> new_verts = make_shared<MatrixXf>(0,0);
+  auto start = system_clock::now();
 
   for(size_t i = 0; i < times; ++i){
     EC(ori_tris, ori_verts, new_tris, new_verts);
@@ -65,6 +66,11 @@ int main(int argc, char**argv){
     new_tris = make_shared<MatrixXi>(0,0);
     new_verts = make_shared<MatrixXf>(0,0);
   }
+  auto end = system_clock::now();
+  auto duration = duration_cast<microseconds>(end - start);
+  cout <<  "section sacn line花费了" 
+       << double(duration.count()) * microseconds::period::num / microseconds::period::den 
+       << "秒" << endl;
 
 
 

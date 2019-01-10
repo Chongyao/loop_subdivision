@@ -139,11 +139,8 @@ int edge_core::set_evens_to_new_tris(C_MI_ptr& ori_tris, MI_ptr& new_tris){
 }
 
 int edge_core::operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_tris, MF_ptr& new_verts){
-  
-  
-  // if(!if_construct_)
-  construct_core(*ori_tris, *ori_verts);    
-
+  if(!if_construct_)  
+    construct_core(*ori_tris, *ori_verts);  
   
   //construct new lookup table
   new_tris->resize(3, 4 * num_faces_);
@@ -156,33 +153,81 @@ int edge_core::operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_
   set_odds_to_new_tris(ori_tris, new_tris);
   set_evens_to_new_tris(ori_tris, new_tris);
 
-  
+
+
+  if(if_update_)
+    update_edges_and_valence(ori_tris, new_tris);
   return 0;
   
 }
 
-// >>>>>>>>>>>>>>>>TODO : update edges after each loop<<<<<<<<<<<<<<<<<<<<<<<<<
-// int edge_core::update_edges(){
-//   edges_.resize(2 * num_edges_ + 3 * num_faces_);
-// #pragma omp parallel for 
-//   for(size_t i = 0; i < num_edges_; ++i){
-//     if(edges_[i].f2 != -1){
-//       edges_[i].f1 = 
-//     }
-//     else
-//       new_verts->col(num_vertices_ + i) = 0.5 * ( ori_verts->col(edges_[i].v1) + ori_verts->col(edges_[i].v2) );
-//   }
+//>>>>>>>>>>>>>>>>TODO : update edges after each loop<<<<<<<<<<<<<<<<<<<<<<<<<
+int edge_core::update_edges_and_valence(C_MI_ptr& ori_tris, C_MI_ptr& new_tris){
+  valences_.resize(num_vertices_ + num_edges_);
+  fill(valences_.begin() + num_vertices_, valences_.begin() + num_vertices_ + num_edges_, 6);
+  edges_.resize(2 * num_edges_ + 3 * num_faces_);
+  //#pragma omp parallel for 
+  for(size_t i = 0; i < num_edges_; ++i){
+      size_t order1 = get_order(edges_[i].v1, (*ori_tris).col(edges_[i].f1));
+      size_t order2 = get_order(edges_[i].v2, (*ori_tris).col(edges_[i].f2));
+
+      edges_[num_edges_ + i].f1 = edges_[i].f1 * 4 + (order1 + 1)%3;
+      edges_[num_edges_ + i].v1 = num_vertices_ + i;
+      edges_[num_edges_ + i].v2 = edges_[i].v2;
+      edges_[num_edges_ + i].v3 = (*new_tris)(1, edges_[num_edges_ + i].f1);
+
+      edges_[i].f1 = edges_[i].f1 * 4 + order1%3;
+      edges_[i].v2 = num_vertices_ + i;
+      edges_[i].v3 = (*new_tris)(2, edges_[i].f1);
+    
+    if(edges_[i].f2 != -1){
+      edges_[num_edges_ + i].f2 = edges_[i].f2 * 4 + order2%3;
+      edges_[num_edges_ + i].v4 = (*new_tris)(2, edges_[num_edges_ + i].f2);
+
+      
+      edges_[i].f2 = edges_[i].f2 * 4 + (order2 + 1)%3;
+      edges_[i].v4 = (*new_tris)(1, edges_[i].f2);
+
+    }
+    else{
+      edges_[num_edges_ + i].f2 = -1;
+      edges_[num_edges_ + i].v4 = -1;
+      
+      edges_[i].f2 = -1;
+      edges_[i].v4 = -1;      
+      
+    }
+  }
 
   
-//   return 0;
-//   for(size_t i = 0; i < num_edges_; ++i){
+  size_t begin = 2 * num_edges_;
+  #pragma omp parallel for
+  for(size_t i = 0; i < num_faces_; ++i){
+    for(size_t j = 0; j < 3; ++j){
+      edges_[begin + i * 3 + j].f1 = i*4 + 3;
+      edges_[begin + i * 3 + j].f2 = i*4 + (j + 1) %3;
+      edges_[begin + i * 3 + j].v1 = (*new_tris)(j%3, i*4 + 3);
+      edges_[begin + i * 3 + j].v2 = (*new_tris)((j + 1)%3, i*4 + 3);
+      edges_[begin + i * 3 + j].v3 = (*new_tris)((j + 2)%3, i*4 + 3);
+      edges_[begin + i * 3 + j].v4 = (*new_tris)(0, i*4 + (j + 1) %3);
+    }
 
+  }
 
-    
-    
-//   }
+  num_faces_ *= 4;
+  num_vertices_ += num_edges_;
+  num_edges_ = edges_.size();
+  return 0;
+}
 
-// }
+int edge_core::get_order(const size_t& v_id, const Vector3i& f){
+  for(size_t i = 0; i < 3; ++i){
+    if(v_id == f(i))
+      return i;
+  }
+  assert(false);
+}
+                  
 
 
 
