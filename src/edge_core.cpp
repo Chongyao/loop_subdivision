@@ -7,16 +7,18 @@ using namespace Eigen;
 const float PI = 3.14159265359;
 namespace marvel{
 
-
+float edge_core::get_beta(const size_t& valence){
+  return  (0.625 - pow((0.375 + 0.25 * cos(2 * PI / valence)), 2) ) / valence;
+}
 
 int edge_core::construct_core(const MatrixXi& tris, const MatrixXf& nods){
   //init
   num_faces_ = tris.cols();
   num_vertices_ = nods.cols();
   edges_.clear();
-  vertices_.clear();
+  valences_.clear();
   edges_ .resize(0);
-  vertices_.resize(num_vertices_, vector<size_t>(0));
+  valences_.resize(num_vertices_);
   
   
   map<pair<size_t, size_t>, size_t> edge_pair2id;
@@ -42,8 +44,8 @@ int edge_core::construct_core(const MatrixXi& tris, const MatrixXf& nods){
         
         edges_.push_back({static_cast<int>(i), -1, tris(j%3, i), tris((j + 1)%3, i), tris((j + 2)%3, i), -1});
         
-        vertices_[one].push_back(another);
-        vertices_[another].push_back(one);
+        ++(valences_[one]);
+        ++(valences_[another]);
         
         ++edge_id;
       }
@@ -66,12 +68,18 @@ int edge_core::construct_core(const MatrixXi& tris, const MatrixXf& nods){
 int edge_core::calculate_odd_points(C_MF_ptr& ori_verts, MF_ptr& new_verts){
 #pragma omp parallel for 
   for(size_t i = 0; i < num_edges_; ++i){
+    
+    size_t v1 = edges_[i].v1, v2 = edges_[i].v2;
+    //add even weight // TODO::  handle boundary in even points
+    new_verts->col(v1) += get_beta(valences_[v1]) * ori_verts->col(v2);
+    new_verts->col(v2) += get_beta(valences_[v2]) * ori_verts->col(v1);
+    
     if(edges_[i].f2 != -1){
-      new_verts->col(num_vertices_ + i) = 0.375 * ( ori_verts->col(edges_[i].v1) + ori_verts->col(edges_[i].v2) )
+      new_verts->col(num_vertices_ + i) = 0.375 * ( ori_verts->col(v1) + ori_verts->col(v2) )
           + 0.125 * ( ori_verts->col(edges_[i].v3) + ori_verts->col(edges_[i].v4) );
     }
     else
-      new_verts->col(num_vertices_ + i) = 0.5 * ( ori_verts->col(edges_[i].v1) + ori_verts->col(edges_[i].v2) );
+      new_verts->col(num_vertices_ + i) = 0.5 * ( ori_verts->col(v1) + ori_verts->col(v2) );
   }
 
   
@@ -79,15 +87,9 @@ int edge_core::calculate_odd_points(C_MF_ptr& ori_verts, MF_ptr& new_verts){
 }
 
 int edge_core::calculate_even_points(C_MF_ptr& ori_verts, MF_ptr& new_verts){
-  #pragma omp parallel for
+    #pragma omp parallel for
   for(size_t i = 0; i < num_vertices_; ++i){
-    size_t valence = vertices_[i].size();
-    float beta = 1.0 / valence * (0.625 - pow((0.375 + 0.25 * cos(2 * PI / valence)), 2) );
-    new_verts->col(i) = (1 - valence * beta) * ori_verts->col(i);
-    for(size_t j = 0; j < valence; ++j){
-      new_verts->col(i) += beta * ori_verts->col( vertices_[i][j]  );
-    }
-
+    new_verts->col(i) = (1 - valences_[i] * get_beta(valences_[i])) * ori_verts->col(i);
   }
   return 0;
 }
@@ -147,9 +149,9 @@ int edge_core::operator ()(C_MI_ptr& ori_tris, C_MF_ptr& ori_verts, MI_ptr& new_
   new_tris->resize(3, 4 * num_faces_);
   new_verts->resize(3, num_vertices_+ num_edges_);
   
-  
+  calculate_even_points(ori_verts, new_verts);  
   calculate_odd_points(ori_verts, new_verts);
-  calculate_even_points(ori_verts, new_verts);
+
   
   set_odds_to_new_tris(ori_tris, new_tris);
   set_evens_to_new_tris(ori_tris, new_tris);

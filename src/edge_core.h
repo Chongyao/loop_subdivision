@@ -41,7 +41,9 @@ class edge_core{
   size_t num_edges_;
   size_t num_vertices_;
   std::vector<one_edge> edges_;
-  std::vector<std::vector<size_t> > vertices_;
+  
+  std::vector<size_t> valences_;
+  float get_beta(const size_t& valence);
 
   bool if_update_;
   bool if_construct_;
