@@ -54,17 +54,9 @@ struct one_edge{
   }
 };
 ```
-![edge](/home/zcy/Documents/projects/loop_subdivision/edge.png)
 
-### 算法简介
-![odd](/home/zcy/Documents/projects/loop_subdivision/oddeven.png)
-在原三角形网格上的每一个边上插入一个点，称之为odd vertex，而原来的点称之为even vertex。
 
-然后分别去更新odd vertices 和 even vertices的位置。
 
-因此该算法是可以并行的，每一次细分下每个边的更新互补影响。
-
-### 算法并行实现
 
 
 
