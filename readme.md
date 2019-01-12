@@ -44,7 +44,7 @@ $ mkdir build & cd build & cmake .. & make -k
 开启终端进入build/bin/目录，并运行./z_buffer
 ```bash
 $ cd build/bin/
-$ ./z_buffer
+$ ./loop_subdivison
 ```
 ## 数据结构　edge_core类
 很明显该算法是一个可以并行的算法。
