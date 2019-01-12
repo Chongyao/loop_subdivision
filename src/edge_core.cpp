@@ -1,11 +1,21 @@
 #include "edge_core.h"
-#include <map>
+#include <unordered_map>
 #include <cmath>
 #include <iostream>
+#include <boost/functional/hash/hash.hpp>
 using namespace std;
 using namespace Eigen;
 const float PI = 3.14159265359;
 namespace marvel{
+
+struct pair_hash{
+  size_t operator ()(const pair<size_t,size_t>& a) const{
+    size_t seed = 0;
+    boost::hash_combine(seed, a.first);
+    boost::hash_combine(seed, a.second);
+    return seed ; 
+  }
+};
 
 float edge_core::get_beta(const size_t& valence){
   return  (0.625 - pow((0.375 + 0.25 * cos(2 * PI / valence)), 2) ) / valence;
@@ -21,7 +31,7 @@ int edge_core::construct_core(const MatrixXi& tris, const MatrixXf& nods){
   valences_.resize(num_vertices_);
   
   
-  map<pair<size_t, size_t>, size_t> edge_pair2id;
+  unordered_map<pair<size_t, size_t>, size_t, pair_hash> edge_pair2id;
   size_t edge_id = 0;
   for(size_t i = 0; i < tris.cols(); ++i){
     for(size_t j = 0; j < 3; ++j){
