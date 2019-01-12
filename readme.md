@@ -60,7 +60,7 @@ struct one_edge{
   }
 };
 ```
-![edge](/home/zcy/Documents/projects/loop_subdivision/edge_small.png)
+![edge](https://raw.githubusercontent.com/Chongyao/loop_subdivision/master/doc/edge_small.png)
 
 建立两个数组，一个数组存放边，为
 ```c++
@@ -72,7 +72,7 @@ vector<size_t> valences_;
 ```
 
 ## 算法简介
-![odd](/home/zcy/Documents/projects/loop_subdivision/oddeven.png)
+![odd](https://raw.githubusercontent.com/Chongyao/loop_subdivision/master/doc/oddeven.png)
 
 在原三角形网格上的每一个边上插入一个点，称之为odd vertex，而原来的点称之为even vertex。
 
@@ -81,7 +81,7 @@ vector<size_t> valences_;
 因此该算法是可以并行的，每一次细分下每个边的更新互不影响。
 
 ## 算法并行实现及优化
-![odd](/home/zcy/Documents/projects/loop_subdivision/struct.png)
+![odd](https://raw.githubusercontent.com/Chongyao/loop_subdivision/master/doc/struct.png)
 
 对于每一个面片，在加上边后按照一定的顺序设置新的拓扑关系，从而可以并行的在每个边上做处理。这里使用openmp实现线程并行。
 ### 建立单边结构的数组
